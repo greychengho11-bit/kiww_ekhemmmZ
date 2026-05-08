@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEMPROTULATION — Jesen Geol</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --navy: #0a0e1a;
+  --dark-blue: #0d1b2a;
+  --rain-gray: #2a3a4a;
+  --night-blue: #1a2744;
+  --neon-blue: #00d4ff;
+  --neon-green: #39ff14;
+  --neon-pink: #ff006e;
+  --neon-yellow: #ffe600;
+  --warm-yellow: #ffb703;
+  --warm-orange: #fb8500;
+  --pixel-white: #e8f4f8;
+  --pixel-red: #ff3333;
+  --heart-pink: #ff69b4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--navy);
+  font-family: 'Press Start 2P', monospace;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  cursor: none;
+}
+
+/* CRT EFFECT */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+  animation: scanline 8s linear infinite;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.5) 100%);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+@keyframes scanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+/* CUSTOM CURSOR */
+#cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--neon-yellow);
+  image-rendering: pixelated;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px var(--neon-yellow);
+}
+
+/* CANVAS */
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* SCENES */
+.scene {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.scene.active { display: flex; }
+
+/* ===== SCENE 1: START ===== */
+#scene1 {
+  background: var(--navy);
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.97; }
+}
+
+.boot-screen {
+  text-align: center;
+  position: relative;
+}
+
+.presents-text {
+  color: var(--neon-blue);
+  font-size: clamp(6px, 1.2vw, 12px);
+  letter-spacing: 4px;
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 0.5s;
+  text-shadow: 0 0 10px var(--neon-blue);
+}
+
+.game-title {
+  color: var(--neon-yellow);
+  font-size: clamp(10px, 2.5vw, 28px);
+  margin: 20px 0;
+  opacity: 0;
+  animation: fadeInSlide 1s ease forwards 1.5s;
+  text-shadow: 4px 4px 0 var(--warm-orange), 0 0 20px var(--neon-yellow);
+  line-height: 1.6;
+}
+
+.subtitle {
+  color: var(--pixel-white);
+  font-size: clamp(5px, 1vw, 10px);
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 2.5s;
+  margin-bottom: 40px;
+  text-shadow: 0 0 5px var(--pixel-white);
+}
+
+.pixel-character-idle {
+  width: 64px; height: 64px;
+  margin: 20px auto;
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards 3s;
+  image-rendering: pixelated;
+}
+
+.start-btn {
+  background: transparent;
+  border: 3px solid var(--neon-green);
+  color: var(--neon-green);
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(7px, 1.5vw, 14px);
+  padding: 14px 28px;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards 3.5s, blink-border 1s infinite 3.5s;
+  text-shadow: 0 0 8px var(--neon-green);
+  box-shadow: 0 0 15px var(--neon-green), inset 0 0 15px rgba(57,255,20,0.05);
+  transition: all 0.1s;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.start-btn:hover {
+  background: var(--neon-green);
+  color: var(--navy);
+  transform: scale(1.05);
+  box-shadow: 0 0 30px var(--neon-green);
+}
+
+@keyframes blink-border {
+  0%,100% { border-color: var(--neon-green); }
+  50% { border-color: transparent; }
+}
+
+.copyright-text {
+  color: var(--rain-gray);
+  font-size: clamp(4px, 0.8vw, 7px);
+  margin-top: 30px;
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 4s;
+}
+
+/* Stars background */
+.stars-bg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  image-rendering: pixelated;
+  animation: twinkle 2s infinite;
+}
+
+@keyframes twinkle {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.5); }
+}
+
+/* ===== SCENE 2: HARD LEVELS ===== */
+#scene2 {
+  background: var(--dark-blue);
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#gameArea {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Rain */
+.rain-container {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.raindrop {
+  position: absolute;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, #4fc3f7);
+  animation: fall linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes fall {
+  to { transform: translateY(110vh); }
+}
+
+/* Lightning */
+.lightning {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  background: linear-gradient(to bottom, #ffffff, #ffe600);
+  z-index: 20;
+  opacity: 0;
+  box-shadow: 0 0 20px #fff, 0 0 40px #ffe600;
+}
+
+/* Clouds */
+.cloud {
+  position: absolute;
+  background: var(--rain-gray);
+  border-radius: 0;
+  image-rendering: pixelated;
+  opacity: 0.8;
+}
+
+/* Ground */
+.ground {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 200%;
+  height: 80px;
+  background: repeating-linear-gradient(
+    90deg,
+    #1a3a2a 0px, #1a3a2a 40px,
+    #2a4a3a 40px, #2a4a3a 80px
+  );
+  border-top: 4px solid #3a6a4a;
+  animation: scrollGround 4s linear infinite;
+}
+
+@keyframes scrollGround {
+  to { transform: translateX(-50%); }
+}
+
+/* Character */
+#character {
+  position: absolute;
+  bottom: 80px;
+  left: 15%;
+  width: 48px; height: 48px;
+  z-index: 50;
+  image-rendering: pixelated;
+  transition: left 0.3s ease;
+}
+
+/* Obstacles */
+.obstacle {
+  position: absolute;
+  bottom: 80px;
+  z-index: 30;
+  animation: scrollLeft linear infinite;
+  image-rendering: pixelated;
+}
+
+@keyframes scrollLeft {
+  to { transform: translateX(-110vw); }
+}
+
+/* Emotional Text */
+.emotional-text {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--pixel-white);
+  font-size: clamp(6px, 1.3vw, 13px);
+  text-align: center;
+  z-index: 60;
+  line-height: 2.2;
+  text-shadow: 2px 2px 0 var(--navy), 0 0 10px rgba(255,255,255,0.3);
+  opacity: 0;
+  width: 80%;
+  max-width: 600px;
+  transition: opacity 0.8s ease;
+}
+
+.emotional-text.visible { opacity: 1; }
+
+/* HUD */
+.hud {
+  position: absolute;
+  top: 15px; left: 15px;
+  color: var(--neon-yellow);
+  font-size: clamp(5px, 1vw, 9px);
+  z-index: 70;
+  text-shadow: 2px 2px 0 var(--navy);
+  line-height: 2;
+}
+
+.hud-lives { color: var(--pixel-red); }
+.hud-level { color: var(--neon-blue); }
+
+/* Progress bar */
+.progress-container {
+  position: absolute;
+  bottom: 15px; left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 500px;
+  z-index: 70;
+}
+
+.progress-label {
+  color: var(--neon-blue);
+  font-size: clamp(5px, 0.8vw, 8px);
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  border: 2px solid var(--neon-blue);
+  background: var(--navy);
+  box-shadow: 0 0 8px var(--neon-blue);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
+  width: 0%;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px var(--neon-blue);
+}
+
+/* Continue button scene 2 */
+.continue-btn {
+  position: absolute;
+  bottom: 50px; right: 30px;
+  background: transparent;
+  border: 2px solid var(--neon-yellow);
+  color: var(--neon-yellow);
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(6px, 1vw, 9px);
+  padding: 10px 18px;
+  cursor: pointer;
+  z-index: 80;
+  opacity: 0;
+  transition: opacity 0.5s, all 0.1s;
+  text-shadow: 0 0 5px var(--neon-yellow);
+  box-shadow: 0 0 10px rgba(255,230,0,0.3);
+  animation: blink-border-yellow 1s infinite;
+}
+
+.continue-btn.visible { opacity: 1; }
+.continue-btn:hover { background: var(--neon-yellow); color: var(--navy); }
+
+@keyframes blink-border-yellow {
+  0%,100% { border-color: var(--neon-yellow); }
+  50% { border-color: transparent; }
+}
+
+/* ===== SCENE 3: FINAL STAGE ===== */
+#scene3 {
+  background: linear-gradient(to bottom, #1a1a2e, #16213e, #0f3460);
+  overflow: hidden;
+}
+
+.clearing-sky {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(to bottom, #ff9f43 0%, #ffd32a 30%, #c7ecee 60%, #1a1a2e 100%);
+  opacity: 0;
+  animation: skyClear 3s ease forwards 1s;
+}
+
+@keyframes skyClear {
+  to { opacity: 0.7; }
+}
+
+.castle-scene {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 60%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.final-text-scene3 {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 60;
+  width: 85%;
+}
+
+.final-text-scene3 .line {
+  color: var(--pixel-white);
+  font-size: clamp(7px, 1.5vw, 14px);
+  line-height: 2.5;
+  opacity: 0;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.5);
+}
+
+.char-walking {
+  position: absolute;
+  bottom: 80px;
+  left: 10%;
+  width: 48px; height: 48px;
+  z-index: 70;
+  image-rendering: pixelated;
+}
+
+.next-scene3-btn {
+  position: absolute;
+  bottom: 40px; left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  border: 3px solid var(--warm-yellow);
+  color: var(--warm-yellow);
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(7px, 1.3vw, 12px);
+  padding: 14px 28px;
+  cursor: pointer;
+  z-index: 80;
+  opacity: 0;
+  transition: opacity 0.5s;
+  text-shadow: 0 0 8px var(--warm-yellow);
+  box-shadow: 0 0 20px rgba(255,183,3,0.3);
+  letter-spacing: 2px;
+}
+
+.next-scene3-btn.visible { opacity: 1; animation: blink-border-warm 1s infinite; }
+.next-scene3-btn:hover { background: var(--warm-yellow); color: var(--navy); }
+
+@keyframes blink-border-warm {
+  0%,100% { border-color: var(--warm-yellow); }
+  50% { border-color: transparent; }
+}
+
+/* ===== SCENE 4: MISSION COMPLETE ===== */
+#scene4 {
+  background: radial-gradient(ellipse at center, #1a3a1a 0%, var(--navy) 70%);
+  overflow: hidden;
+}
+
+.victory-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  animation: flashIn 0.5s ease forwards;
+}
+
+@keyframes flashIn {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.mission-complete-text {
+  color: var(--neon-yellow);
+  font-size: clamp(8px, 2.5vw, 28px);
+  text-align: center;
+  text-shadow: 4px 4px 0 var(--warm-orange), 0 0 30px var(--neon-yellow), 0 0 60px var(--warm-yellow);
+  animation: victoryPulse 0.5s ease infinite alternate;
+  z-index: 20;
+  line-height: 1.6;
+}
+
+@keyframes victoryPulse {
+  from { transform: scale(1); text-shadow: 4px 4px 0 var(--warm-orange), 0 0 20px var(--neon-yellow); }
+  to { transform: scale(1.03); text-shadow: 4px 4px 0 var(--warm-orange), 0 0 50px var(--neon-yellow), 0 0 80px var(--warm-yellow); }
+}
+
+.victory-subtext {
+  color: var(--pixel-white);
+  font-size: clamp(5px, 1vw, 10px);
+  text-align: center;
+  line-height: 2.8;
+  z-index: 20;
+  margin-top: 20px;
+  max-width: 600px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 1.5s;
+  padding: 0 20px;
+}
+
+.next-scene4-btn {
+  background: transparent;
+  border: 3px solid var(--heart-pink);
+  color: var(--heart-pink);
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(7px, 1.2vw, 11px);
+  padding: 14px 24px;
+  cursor: pointer;
+  z-index: 20;
+  margin-top: 25px;
+  text-shadow: 0 0 8px var(--heart-pink);
+  box-shadow: 0 0 20px rgba(255,105,180,0.3);
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 3s, blink-pink 1s infinite 3s;
+  transition: all 0.1s;
+  letter-spacing: 1px;
+}
+
+.next-scene4-btn:hover { background: var(--heart-pink); color: var(--navy); }
+
+@keyframes blink-pink {
+  0%,100% { border-color: var(--heart-pink); }
+  50% { border-color: transparent; }
+}
+
+/* ===== SCENE 5: SECRET MESSAGE ===== */
+#scene5 {
+  background: var(--navy);
+  overflow: hidden;
+}
+
+.letter-envelope {
+  width: clamp(260px, 70vw, 520px);
+  background: #1a2744;
+  border: 3px solid var(--neon-pink);
+  box-shadow: 0 0 30px rgba(255,0,110,0.4), 6px 6px 0 rgba(255,0,110,0.3);
+  padding: clamp(20px, 4vw, 40px);
+  position: relative;
+  z-index: 20;
+  cursor: pointer;
+  transition: transform 0.2s;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.letter-envelope:hover { transform: scale(1.01); }
+
+.envelope-header {
+  text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(255,0,110,0.3);
+}
+
+.envelope-header .icon { font-size: 24px; margin-bottom: 10px; }
+
+.envelope-header .title {
+  color: var(--neon-pink);
+  font-size: clamp(7px, 1.3vw, 12px);
+  text-shadow: 0 0 10px var(--neon-pink);
+  letter-spacing: 2px;
+}
+
+.letter-content {
+  color: var(--pixel-white);
+  font-size: clamp(6px, 1.1vw, 10px);
+  line-height: 2.8;
+  text-align: left;
+}
+
+.letter-content .typed-line {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  opacity: 0;
+  margin-bottom: 5px;
+}
+
+.letter-content .typed-line.done {
+  width: 100%;
+  white-space: normal;
+  opacity: 1;
+}
+
+.letter-signature {
+  text-align: right;
+  margin-top: 25px;
+  color: var(--heart-pink);
+  font-size: clamp(6px, 1.1vw, 10px);
+  text-shadow: 0 0 8px var(--heart-pink);
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 8s;
+}
+
+.letter-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px solid rgba(255,0,110,0.2);
+  color: var(--neon-yellow);
+  font-size: clamp(5px, 0.8vw, 8px);
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 9s;
+}
+
+/* FIREWORKS / CONFETTI */
+.confetti-piece {
+  position: fixed;
+  width: 8px; height: 8px;
+  image-rendering: pixelated;
+  z-index: 200;
+  pointer-events: none;
+  animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+.firework {
+  position: fixed;
+  pointer-events: none;
+  z-index: 200;
+}
+
+.firework-particle {
+  position: absolute;
+  width: 6px; height: 6px;
+  image-rendering: pixelated;
+  animation: explode linear forwards;
+}
+
+@keyframes explode {
+  0% { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+/* FLOATING HEARTS */
+.floating-heart {
+  position: fixed;
+  pointer-events: none;
+  z-index: 200;
+  animation: floatUp linear forwards;
+  font-size: 16px;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-80vh) scale(0.5); opacity: 0; }
+}
+
+/* COIN */
+.pixel-coin {
+  position: fixed;
+  pointer-events: none;
+  z-index: 200;
+  width: 14px; height: 14px;
+  background: var(--neon-yellow);
+  border-radius: 0;
+  box-shadow: 0 0 8px var(--neon-yellow);
+  animation: coinBounce linear forwards;
+  image-rendering: pixelated;
+}
+
+@keyframes coinBounce {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  50% { transform: translateY(-40px) rotate(180deg); opacity: 1; }
+  100% { transform: translateY(60px) rotate(360deg); opacity: 0; }
+}
+
+/* PIXEL CANVAS for characters */
+canvas.pixel-art { image-rendering: pixelated; }
+
+/* SCREEN SHAKE */
+@keyframes screenShake {
+  0%,100% { transform: translate(0,0); }
+  20% { transform: translate(-4px, 4px); }
+  40% { transform: translate(4px, -4px); }
+  60% { transform: translate(-4px, -4px); }
+  80% { transform: translate(4px, 4px); }
+}
+
+.shake { animation: screenShake 0.3s ease; }
+
+/* GLITCH */
+@keyframes glitch {
+  0%,100% { clip-path: none; transform: none; }
+  20% { clip-path: inset(20% 0 60% 0); transform: translateX(-5px); }
+  40% { clip-path: inset(60% 0 20% 0); transform: translateX(5px); }
+  60% { clip-path: inset(40% 0 40% 0); transform: translateX(-3px); }
+}
+
+/* TRANSITIONS */
+.scene-transition {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: var(--navy);
+  z-index: 9000;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* HELPERS */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInSlide {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* PIXEL ART SPRITES via CSS */
+.sprite-jesen {
+  display: grid;
+  grid-template-columns: repeat(8, 6px);
+  grid-template-rows: repeat(8, 6px);
+  image-rendering: pixelated;
+  gap: 0;
+}
+
+/* Scrollbar style */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: var(--neon-pink); }
+
+/* MOBILE */
+@media (max-width: 600px) {
+  .game-title { font-size: 14px !important; }
+  .start-btn { font-size: 9px !important; padding: 12px 20px; }
+  .letter-envelope { width: 90vw; padding: 20px; }
+}
+
+/* Victory char animation */
+@keyframes charVictory {
+  0%,100% { transform: translateY(0) scaleX(1); }
+  25% { transform: translateY(-20px) scaleX(1); }
+  50% { transform: translateY(0) scaleX(1); }
+  75% { transform: translateY(-10px) scaleX(-1); }
+}
+
+.char-victory { animation: charVictory 0.8s ease infinite; }
+
+/* Parallax clouds */
+.parallax-cloud {
+  position: absolute;
+  animation: cloudFloat linear infinite;
+}
+
+@keyframes cloudFloat {
+  from { transform: translateX(110vw); }
+  to { transform: translateX(-200px); }
+}
+
+/* Score popup */
+.score-popup {
+  position: absolute;
+  color: var(--neon-yellow);
+  font-size: clamp(7px, 1.2vw, 11px);
+  z-index: 80;
+  animation: scoreFloat 1.5s ease forwards;
+  pointer-events: none;
+  text-shadow: 2px 2px 0 var(--navy);
+}
+
+@keyframes scoreFloat {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-60px); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div class="scene-transition" id="sceneTransition"></div>
+
+<!-- =============================== -->
+<!-- SCENE 1: START GAME             -->
+<!-- =============================== -->
+<div class="scene active" id="scene1">
+  <div class="stars-bg" id="starsContainer"></div>
+  
+  <div class="boot-screen">
+    <div class="presents-text">GREY COMEL PRESENTS…</div>
+    
+    <div class="game-title">
+      ★ A LONG JOURNEY ★<br>
+      <span style="color:var(--neon-pink);">OF JESEN GEOL</span>
+    </div>
+    
+    <div class="subtitle">— the legend of the acc proposal —</div>
+    
+    <!-- Pixel Jesen idle character (canvas) -->
+    <canvas id="idleChar" width="64" height="64" class="pixel-art pixel-character-idle"></canvas>
+    
+    <button class="start-btn" onclick="startGame()">▶ START GAME</button>
+    
+    <div class="copyright-text">© GREY COMEL STUDIO • ALL RIGHTS RESERVED ♡</div>
+  </div>
+</div>
+
+<!-- =============================== -->
+<!-- SCENE 2: HARD LEVELS            -->
+<!-- =============================== -->
+<div class="scene" id="scene2">
+  <div id="gameArea">
+    <!-- HUD -->
+    <div class="hud">
+      <div>PLAYER: JESEN GEOL</div>
+      <div class="hud-level">WORLD: 1 - THE STRUGGLE</div>
+      <div class="hud-lives">♥ ♥ ♥</div>
+      <div id="scoreDisplay">SCORE: 0</div>
+    </div>
+    
+    <!-- Clouds -->
+    <div id="cloudsContainer"></div>
+    
+    <!-- Rain -->
+    <div class="rain-container" id="rainContainer"></div>
+    
+    <!-- Lightning -->
+    <div class="lightning" id="lightning" style="height:0"></div>
+    
+    <!-- Emotional Text -->
+    <div class="emotional-text" id="emotionalText"></div>
+    
+    <!-- Obstacles container -->
+    <div id="obstaclesContainer"></div>
+    
+    <!-- Character -->
+    <canvas id="charCanvas" width="48" height="48" class="pixel-art" id="character"
+      style="position:absolute;bottom:80px;left:15%;z-index:50;"></canvas>
+    
+    <!-- Ground -->
+    <div class="ground"></div>
+    
+    <!-- Progress -->
+    <div class="progress-container">
+      <div class="progress-label">PROGRESS TO ACC PROPOSAL ▶▶▶</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    
+    <!-- Continue button -->
+    <button class="continue-btn" id="continueBtn2" onclick="goToScene3()">
+      ▶ TERUSKAN PERJALANAN
+    </button>
+  </div>
+</div>
+
+<!-- =============================== -->
+<!-- SCENE 3: FINAL STAGE            -->
+<!-- =============================== -->
+<div class="scene" id="scene3">
+  <div class="clearing-sky"></div>
+  
+  <div id="finalClouds"></div>
+  
+  <!-- Final text -->
+  <div class="final-text-scene3" id="finalTextScene3">
+    <div class="line" id="fs3_1" style="color:var(--pixel-white)">dan setelah semua</div>
+    <div class="line" id="fs3_2" style="color:var(--neon-blue)">perjalanan berliku itu…</div>
+    <div class="line" id="fs3_3" style="color:var(--warm-yellow);margin-top:15px">akhirnya kamu sampai juga</div>
+    <div class="line" id="fs3_4" style="color:var(--neon-yellow)">di garis ini…</div>
+  </div>
+  
+  <!-- Castle pixel via canvas -->
+  <canvas id="castleCanvas" width="200" height="200" class="pixel-art"
+    style="position:absolute;bottom:70px;right:15%;z-index:40;"></canvas>
+  
+  <!-- Walking character -->
+  <canvas id="walkChar3" width="48" height="48" class="pixel-art char-walking"
+    style="position:absolute;bottom:78px;left:5%;z-index:50;"></canvas>
+  
+  <!-- Ground scene 3 -->
+  <div class="ground" style="animation:scrollGround 6s linear infinite;"></div>
+  
+  <!-- Sun rays -->
+  <div id="sunRays" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;"></div>
+  
+  <button class="next-scene3-btn" id="nextBtn3" onclick="goToScene4()">
+    🏆 LIHAT KEMENANGAN
+  </button>
+</div>
+
+<!-- =============================== -->
+<!-- SCENE 4: MISSION COMPLETE       -->
+<!-- =============================== -->
+<div class="scene" id="scene4" style="flex-direction:column;gap:10px;">
+  <div class="victory-overlay"></div>
+  
+  <!-- Fireworks canvas -->
+  <canvas id="fireworksCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;"></canvas>
+  
+  <!-- Victory char -->
+  <canvas id="victoryChar" width="72" height="72" class="pixel-art char-victory"
+    style="z-index:20;margin-bottom:5px;"></canvas>
+  
+  <div class="mission-complete-text">
+    🎉 SEMPROTULATION<br>
+    <span style="color:var(--neon-pink);text-shadow:4px 4px 0 #800040,0 0 30px var(--neon-pink)">JESEN GEOL</span><br>
+    🎉
+  </div>
+  
+  <div class="victory-subtext">
+    selamat atas acc proposal penelitianmu.<br>
+    <span style="color:var(--neon-blue)">semua perjuangan, tangis, cape, takut, dan doa</span><br>
+    akhirnya sampai di titik ini.<br>
+    <span style="color:var(--neon-green)">kamu berhasil menembus semua level kehidupan itu.</span><br>
+    <span style="color:var(--heart-pink)">dan grey comel selalu bangga sama kamu. ♡</span>
+  </div>
+  
+  <button class="next-scene4-btn" onclick="goToScene5()">
+    ✉ BUKA PESAN RAHASIA
+  </button>
+</div>
+
+<!-- =============================== -->
+<!-- SCENE 5: SECRET MESSAGE         -->
+<!-- =============================== -->
+<div class="scene" id="scene5" style="flex-direction:column;align-items:center;">
+  <div class="stars-bg" id="starsContainer5"></div>
+  
+  <div class="letter-envelope" id="letterEnvelope">
+    <div class="envelope-header">
+      <div class="icon">💌</div>
+      <div class="title">— SECRET MESSAGE FROM GREY COMEL —</div>
+    </div>
+    
+    <div class="letter-content" id="letterContent">
+      <span class="typed-line" id="l1">buat jesen geol yang luar biasa…</span>
+      <br>
+      <span class="typed-line" id="l2">makasih udah bertahan sejauh ini.</span>
+      <span class="typed-line" id="l3">aku tau perjalanan kamu ga gampang.</span>
+      <span class="typed-line" id="l4">ada banyak malam yang kamu habiskan</span>
+      <span class="typed-line" id="l5">cuma buat ngejar satu kata "acc".</span>
+      <br>
+      <span class="typed-line" id="l6" style="color:var(--neon-blue)">tapi kamu tetep jalan.</span>
+      <span class="typed-line" id="l7" style="color:var(--neon-blue)">walaupun berkali-kali hampir nyerah.</span>
+      <span class="typed-line" id="l8" style="color:var(--neon-blue)">walaupun capeknya ga pernah keliatan.</span>
+      <br>
+      <span class="typed-line" id="l9" style="color:var(--warm-yellow)">dan hari ini…</span>
+      <span class="typed-line" id="l10" style="color:var(--warm-yellow)">semua perjuangan itu kebayar.</span>
+      <span class="typed-line" id="l11" style="color:var(--neon-green)">ACC. PROPOSAL. PENELITIAN.</span>
+      <br>
+      <span class="typed-line" id="l12" style="color:var(--heart-pink)">aku bangga banget sama kamu.</span>
+      <span class="typed-line" id="l13" style="color:var(--heart-pink)">beneran. dari hati yang paling dalem.</span>
+      <br>
+      <span class="typed-line" id="l14">please keep shining,</span>
+      <span class="typed-line" id="l15">my favorite human. 🌟</span>
+    </div>
+    
+    <div class="letter-signature">— grey comel ♡</div>
+    
+    <div class="letter-footer">
+      ★ YOU COMPLETED ALL LEVELS ★<br>
+      <span style="color:var(--neon-blue)">FINAL SCORE: ∞ ♥</span>
+    </div>
+  </div>
+  
+  <!-- Replay button -->
+  <button onclick="replayGame()" style="
+    margin-top:15px;
+    background:transparent;
+    border:2px solid var(--rain-gray);
+    color:var(--rain-gray);
+    font-family:'Press Start 2P',monospace;
+    font-size:clamp(5px,0.9vw,8px);
+    padding:10px 18px;
+    cursor:pointer;
+    z-index:20;
+    transition:all 0.2s;
+    letter-spacing:1px;
+  " onmouseover="this.style.color='white';this.style.borderColor='white'"
+     onmouseout="this.style.color='var(--rain-gray)';this.style.borderColor='var(--rain-gray)'">
+    ↺ MAIN ULANG
+  </button>
+</div>
+
+<script>
+// ==============================
+// AUDIO ENGINE
+// ==============================
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx = null;
+
+function initAudio() {
+  if (!ctx) ctx = new AudioCtx();
+}
+
+function playTone(freq, type='square', duration=0.15, vol=0.15, delay=0) {
+  try {
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + duration + 0.01);
+  } catch(e) {}
+}
+
+function playCoin() {
+  playTone(987, 'square', 0.06, 0.2);
+  playTone(1319, 'square', 0.06, 0.2, 0.07);
+}
+
+function playJump() {
+  const osc = ctx?.createOscillator();
+  const gain = ctx?.createGain();
+  if (!osc) return;
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(300, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.15);
+  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+  osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.25);
+}
+
+function playThunder() {
+  try {
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.4, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/data.length, 2);
+    const src = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    const filt = ctx.createBiquadFilter();
+    filt.type = 'lowpass'; filt.frequency.value = 200;
+    src.buffer = buf;
+    src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.6, ctx.currentTime);
+    src.start(); src.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+function playLevelComplete() {
+  const notes = [523,659,784,1047];
+  notes.forEach((n,i) => playTone(n,'square',0.18,0.25,i*0.12));
+}
+
+function playVictoryFanfare() {
+  const melody = [523,523,523,415,523,0,659,523];
+  melody.forEach((n,i) => { if(n) playTone(n,'square',0.18,0.2,i*0.15); });
+  setTimeout(() => {
+    const c = [523,659,784,1047];
+    c.forEach((n,i) => playTone(n,'square',0.4,0.15,i*0.08));
+  }, 1300);
+}
+
+function playEmotionalBg() {
+  if (!ctx) return;
+  const melody = [262,294,330,349,330,294,262,0,220,262,294,330,294,262,220,0];
+  let t = 0;
+  melody.forEach(n => {
+    if (n) {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.value = n;
+      g.gain.setValueAtTime(0.06, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.4);
+      osc.start(ctx.currentTime + t);
+      osc.stop(ctx.currentTime + t + 0.45);
+    }
+    t += 0.35;
+  });
+}
+
+// ==============================
+// PIXEL ART DRAWING
+// ==============================
+function drawJesen(canvas, frame=0, isVictory=false) {
+  const ctx2 = canvas.getContext('2d');
+  ctx2.clearRect(0, 0, canvas.width, canvas.height);
+  const s = canvas.width / 8;
+  
+  // Color palette
+  const skin = '#ffb347';
+  const hair = '#4a2800';
+  const shirt = '#3498db';
+  const pants = '#1a1a3e';
+  const shoes = '#2c2c2c';
+  const eyes = '#1a1a1a';
+  const smile = '#e74c3c';
+  const star = '#ffe600';
+  
+  // Pixel grid: 8x8
+  const pixels = isVictory ? [
+    [0,0,hair,hair,hair,hair,0,0],
+    [0,skin,skin,skin,skin,skin,skin,0],
+    [skin,eyes,skin,skin,skin,eyes,skin,0],
+    [skin,skin,smile,skin,skin,smile,skin,0],
+    [0,shirt,shirt,shirt,shirt,shirt,shirt,0],
+    [star,shirt,shirt,shirt,shirt,shirt,shirt,star],
+    [0,pants,0,pants,0,pants,0,0],
+    [shoes,shoes,0,shoes,shoes,shoes,0,0],
+  ] : frame % 2 === 0 ? [
+    [0,0,hair,hair,hair,hair,0,0],
+    [0,skin,skin,skin,skin,skin,skin,0],
+    [skin,eyes,skin,skin,skin,eyes,skin,0],
+    [skin,skin,smile,skin,skin,smile,skin,0],
+    [0,shirt,shirt,shirt,shirt,shirt,shirt,0],
+    [0,shirt,shirt,shirt,shirt,shirt,shirt,0],
+    [0,pants,0,0,pants,pants,0,0],
+    [0,shoes,0,0,shoes,shoes,0,0],
+  ] : [
+    [0,0,hair,hair,hair,hair,0,0],
+    [0,skin,skin,skin,skin,skin,skin,0],
+    [skin,eyes,skin,skin,skin,eyes,skin,0],
+    [skin,skin,smile,skin,skin,smile,skin,0],
+    [0,shirt,shirt,shirt,shirt,shirt,shirt,0],
+    [0,shirt,shirt,shirt,shirt,shirt,shirt,0],
+    [0,pants,pants,0,0,pants,0,0],
+    [0,shoes,shoes,0,0,shoes,0,0],
+  ];
+  
+  pixels.forEach((row, y) => {
+    row.forEach((col, x) => {
+      if (col) {
+        ctx2.fillStyle = col;
+        ctx2.fillRect(x*s, y*s, s, s);
+      }
+    });
+  });
+}
+
+function drawCastle(canvas) {
+  const c = canvas.getContext('2d');
+  c.clearRect(0,0,200,200);
+  const s = 10;
+  
+  const W = '#e8e8e8', G = '#aaaaaa', D = '#5c4000', F = '#333', Y = '#ffe600', P = '#ff69b4';
+  
+  // Castle design 20x20
+  const grid = [
+    [0,0,W,0,W,W,W,W,W,W,W,W,W,W,W,W,W,0,W,0],
+    [0,0,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,W,0],
+    [0,0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,0],
+    [0,0,G,Y,G,G,G,G,G,Y,G,Y,G,G,G,G,G,Y,G,0],
+    [0,0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,0],
+    [0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G],
+    [0,G,G,F,G,G,G,G,F,G,G,G,F,G,G,G,G,F,G,G],
+    [0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G],
+    [0,G,G,F,G,G,G,G,F,G,G,G,F,G,G,G,G,F,G,G],
+    [0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G],
+    [0,0,G,G,G,G,G,G,G,G,D,D,G,G,G,G,G,G,G,0],
+    [0,0,G,G,G,G,G,G,G,D,D,D,D,G,G,G,G,G,G,0],
+    [0,0,G,G,G,G,G,G,D,D,D,D,D,D,G,G,G,G,G,0],
+    [0,0,G,G,G,G,G,G,D,D,D,D,D,D,G,G,G,G,G,0],
+    [0,0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,0],
+    [0,0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,0],
+    [0,0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,0],
+    [0,0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,0],
+    [0,0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,0],
+    [0,0,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,0],
+  ];
+  
+  grid.forEach((row,y) => row.forEach((col,x) => {
+    if (col) { c.fillStyle=col; c.fillRect(x*s,y*s,s,s); }
+  }));
+  
+  // Flag
+  c.fillStyle = P;
+  for(let i=0;i<5;i++){c.fillStyle=P;c.fillRect(9*s,(i)*s,s,s);}
+  c.fillStyle = Y; c.fillRect(9*s,0,s,s);
+}
+
+// ==============================
+// SCENE 1 — SETUP
+// ==============================
+function setupScene1() {
+  const container = document.getElementById('starsContainer');
+  for (let i = 0; i < 80; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() < 0.3 ? 4 : 2;
+    star.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      animation-delay:${Math.random()*3}s;
+      animation-duration:${1.5+Math.random()*2}s;
+    `;
+    container.appendChild(star);
+  }
+  
+  drawJesen(document.getElementById('idleChar'), 0);
+  setInterval(() => {
+    const c = document.getElementById('idleChar');
+    if (c) drawJesen(c, Math.floor(Date.now()/400));
+  }, 400);
+}
+
+function startGame() {
+  initAudio();
+  playLevelComplete();
+  transitionTo('scene1', 'scene2', setupScene2);
+}
+
+// ==============================
+// SCENE TRANSITION
+// ==============================
+function transitionTo(from, to, callback) {
+  const overlay = document.getElementById('sceneTransition');
+  overlay.style.opacity = '1';
+  overlay.style.transition = 'opacity 0.4s';
+  setTimeout(() => {
+    document.getElementById(from).classList.remove('active');
+    document.getElementById(to).classList.add('active');
+    if (callback) callback();
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+    }, 100);
+  }, 400);
+}
+
+// ==============================
+// SCENE 2 — HARD LEVELS
+// ==============================
+let scene2Frame = 0;
+let charY = 80;
+let isJumping = false;
+let jumpVel = 0;
+let score = 0;
+let progressPct = 0;
+let emotionalQueue = [
+  "ga semua perjalanan itu mudah…",
+  "ada malam yang dipaksa kuat…",
+  "ada lelah yang ga pernah diceritain…",
+  "ada takut gagal yang dipendem sendirian…",
+  "tapi kamu tetep jalan…",
+  "meski dunia gelap dan penuh badai…"
+];
+let emoIdx = 0;
+let scene2Active = false;
+let scene2Interval = null;
+
+function setupScene2() {
+  scene2Active = true;
+  createRain();
+  createClouds();
+  createObstacles();
+  startLightning();
+  startEmotionalText();
+  animateChar2();
+  growProgress();
+  
+  // Jump on click/tap
+  document.getElementById('scene2').addEventListener('click', handleJump);
+  document.getElementById('scene2').addEventListener('touchstart', handleJump);
+  
+  // Show continue button after 18s
+  setTimeout(() => {
+    if (!scene2Active) return;
+    document.getElementById('continueBtn2').classList.add('visible');
+    playLevelComplete();
+  }, 18000);
+  
+  // Play bg music loop
+  bgMusicLoop();
+}
+
+function bgMusicLoop() {
+  if (!scene2Active) return;
+  playEmotionalBg();
+  setTimeout(() => { if(scene2Active) bgMusicLoop(); }, 6000);
+}
+
+function handleJump(e) {
+  e.stopPropagation();
+  if (!isJumping) {
+    isJumping = true;
+    jumpVel = -15;
+    playCoin();
+    showScorePopup();
+  }
+}
+
+function showScorePopup() {
+  score += 100;
+  document.getElementById('scoreDisplay').textContent = 'SCORE: ' + score;
+  
+  const popup = document.createElement('div');
+  popup.className = 'score-popup';
+  popup.textContent = '+100';
+  popup.style.left = '20%';
+  popup.style.bottom = '200px';
+  document.getElementById('gameArea').appendChild(popup);
+  setTimeout(() => popup.remove(), 1500);
+  
+  // Spawn coin
+  for (let i = 0; i < 3; i++) {
+    spawnCoin();
+  }
+}
+
+function spawnCoin() {
+  const coin = document.createElement('div');
+  coin.className = 'pixel-coin';
+  coin.style.left = (10 + Math.random() * 30) + '%';
+  coin.style.bottom = (150 + Math.random() * 100) + 'px';
+  coin.style.animationDuration = '0.8s';
+  document.getElementById('gameArea').appendChild(coin);
+  setTimeout(() => coin.remove(), 900);
+}
+
+let charFrame2 = 0;
+function animateChar2() {
+  if (!scene2Active) return;
+  const canvas = document.getElementById('charCanvas');
+  if (!canvas) return;
+  
+  // Physics
+  if (isJumping) {
+    jumpVel += 1.2;
+    charY = Math.max(80, charY - jumpVel);
+    if (charY <= 80) { charY = 80; isJumping = false; jumpVel = 0; }
+    canvas.style.bottom = charY + 'px';
+  }
+  
+  charFrame2++;
+  drawJesen(canvas, charFrame2);
+  requestAnimationFrame(animateChar2);
+}
+
+function createRain() {
+  const container = document.getElementById('rainContainer');
+  for (let i = 0; i < 80; i++) {
+    const drop = document.createElement('div');
+    drop.className = 'raindrop';
+    const h = 8 + Math.random() * 20;
+    drop.style.cssText = `
+      left:${Math.random()*100}%;
+      top:-${h}px;
+      height:${h}px;
+      animation-duration:${0.4+Math.random()*0.6}s;
+      animation-delay:${Math.random()*0.5}s;
+    `;
+    container.appendChild(drop);
+  }
+}
+
+function createClouds() {
+  const container = document.getElementById('cloudsContainer');
+  const colors = ['#2a3a4a','#1e2e3e','#344555'];
+  for (let i = 0; i < 6; i++) {
+    const cloud = document.createElement('div');
+    cloud.className = 'parallax-cloud';
+    const w = 60 + Math.random() * 120;
+    const h = 30 + Math.random() * 40;
+    const top = 5 + Math.random() * 35;
+    const dur = 10 + Math.random() * 20;
+    const delay = Math.random() * -20;
+    cloud.style.cssText = `
+      width:${w}px;height:${h}px;
+      background:${colors[i%3]};
+      top:${top}%;
+      box-shadow: -20px 5px 0 ${colors[i%3]}, 20px 5px 0 ${colors[i%3]}, 10px -5px 0 ${colors[i%3]};
+      animation-duration:${dur}s;
+      animation-delay:${delay}s;
+    `;
+    container.appendChild(cloud);
+  }
+}
+
+const obstacleTypes = [
+  { label: 'DEADLINE', color: '#ff3333', w: 36, h: 36 },
+  { label: 'REVISI', color: '#ff6600', w: 30, h: 48 },
+  { label: 'OVERTHINKING', color: '#9900ff', w: 44, h: 40 },
+  { label: 'BEGADANG', color: '#0066ff', w: 32, h: 32 },
+  { label: 'CAPEK', color: '#cc0044', w: 38, h: 38 },
+  { label: 'TEKANAN', color: '#006633', w: 42, h: 50 },
+];
+
+function createObstacles() {
+  const container = document.getElementById('obstaclesContainer');
+  obstacleTypes.forEach((type, i) => {
+    const obs = document.createElement('div');
+    obs.className = 'obstacle';
+    obs.style.cssText = `
+      left:${110 + i*18}vw;
+      width:${type.w}px;height:${type.h}px;
+      background:${type.color};
+      box-shadow:3px 3px 0 rgba(0,0,0,0.5),0 0 10px ${type.color};
+      display:flex;align-items:center;justify-content:center;
+      flex-direction:column;
+      animation-duration:${6+i*1.5}s;
+      animation-delay:${i*2}s;
+    `;
+    
+    const label = document.createElement('div');
+    label.style.cssText = `
+      color:white;font-family:'Press Start 2P',monospace;
+      font-size:4px;text-align:center;padding:2px;
+      text-shadow:1px 1px 0 rgba(0,0,0,0.8);
+    `;
+    label.textContent = type.label;
+    obs.appendChild(label);
+    
+    // Monster eyes
+    const eyes = document.createElement('div');
+    eyes.style.cssText = 'display:flex;gap:6px;margin-top:3px;';
+    eyes.innerHTML = '<div style="width:6px;height:6px;background:white;"></div><div style="width:6px;height:6px;background:white;"></div>';
+    obs.appendChild(eyes);
+    
+    container.appendChild(obs);
+  });
+}
+
+function startLightning() {
+  function flash() {
+    if (!scene2Active) return;
+    const delay = 3000 + Math.random() * 8000;
+    setTimeout(() => {
+      if (!scene2Active) return;
+      // Screen flash
+      document.getElementById('scene2').classList.add('shake');
+      document.body.style.backgroundColor = '#111a2e';
+      setTimeout(() => {
+        document.getElementById('scene2').classList.remove('shake');
+        document.body.style.backgroundColor = '';
+      }, 300);
+      
+      playThunder();
+      
+      const bolt = document.getElementById('lightning');
+      bolt.style.height = '60vh';
+      bolt.style.opacity = '1';
+      bolt.style.left = (20 + Math.random()*60) + '%';
+      setTimeout(() => { bolt.style.opacity='0'; bolt.style.height='0'; }, 150);
+      
+      flash();
+    }, delay);
+  }
+  flash();
+}
+
+function startEmotionalText() {
+  function show() {
+    if (!scene2Active) return;
+    const el = document.getElementById('emotionalText');
+    el.textContent = emotionalQueue[emoIdx % emotionalQueue.length];
+    el.classList.add('visible');
+    emoIdx++;
+    
+    setTimeout(() => {
+      el.classList.remove('visible');
+      setTimeout(show, 2500);
+    }, 3500);
+  }
+  setTimeout(show, 1500);
+}
+
+function growProgress() {
+  if (!scene2Active) return;
+  if (progressPct < 90) {
+    progressPct += 0.3;
+    document.getElementById('progressFill').style.width = progressPct + '%';
+    setTimeout(growProgress, 100);
+  }
+}
+
+// ==============================
+// SCENE 3 — FINAL STAGE
+// ==============================
+function goToScene3() {
+  scene2Active = false;
+  initAudio();
+  transitionTo('scene2', 'scene3', setupScene3);
+}
+
+let walkChar3Frame = 0;
+function setupScene3() {
+  // Draw castle
+  drawCastle(document.getElementById('castleCanvas'));
+  
+  // Animate walk char
+  function animWalk() {
+    const c = document.getElementById('walkChar3');
+    if (!c) return;
+    walkChar3Frame++;
+    drawJesen(c, walkChar3Frame);
+    requestAnimationFrame(animWalk);
+  }
+  animWalk();
+  
+  // Animate walk to castle
+  const c = document.getElementById('walkChar3');
+  let pos = 5;
+  function walk() {
+    if (pos < 65) {
+      pos += 0.15;
+      if(c) c.style.left = pos + '%';
+      requestAnimationFrame(walk);
+    }
+  }
+  walk();
+  
+  // Show lines sequentially
+  const lines = ['fs3_1','fs3_2','fs3_3','fs3_4'];
+  lines.forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.opacity = '1';
+        el.style.transition = 'opacity 1s ease';
+        playCoin();
+      }
+    }, 1000 + i * 1200);
+  });
+  
+  // Show next button
+  setTimeout(() => {
+    const btn = document.getElementById('nextBtn3');
+    if (btn) btn.classList.add('visible');
+    playLevelComplete();
+  }, 7000);
+  
+  // Lighter rain for scene 3
+  const finalC = document.getElementById('finalClouds');
+  for(let i=0;i<3;i++){
+    const cl = document.createElement('div');
+    cl.className = 'parallax-cloud';
+    cl.style.cssText = `
+      width:${80+Math.random()*100}px;height:${25+Math.random()*30}px;
+      background:#ffd580;top:${5+i*10}%;
+      box-shadow:-15px 3px 0 #ffd580,15px 3px 0 #ffd580;
+      animation-duration:${12+i*5}s;animation-delay:${-i*4}s;
+      opacity:0.6;
+    `;
+    finalC.appendChild(cl);
+  }
+}
+
+function goToScene4() {
+  initAudio();
+  transitionTo('scene3', 'scene4', setupScene4);
+}
+
+// ==============================
+// SCENE 4 — VICTORY
+// ==============================
+function setupScene4() {
+  playVictoryFanfare();
+  
+  // Draw victory char
+  const vc = document.getElementById('victoryChar');
+  drawJesen(vc, 0, true);
+  setInterval(() => {
+    drawJesen(vc, Math.floor(Date.now()/300), true);
+  }, 300);
+  
+  // Start fireworks
+  const fw = document.getElementById('fireworksCanvas');
+  fw.width = window.innerWidth;
+  fw.height = window.innerHeight;
+  runFireworks(fw);
+  
+  // Confetti
+  setInterval(spawnConfetti, 150);
+  
+  // Hearts
+  setInterval(spawnHeart, 600);
+  
+  // Progress to 100%
+  setTimeout(() => {
+    document.getElementById('progressFill') && (document.getElementById('progressFill').style.width = '100%');
+  }, 0);
+}
+
+function runFireworks(canvas) {
+  const c = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const particles = [];
+  
+  function addFirework() {
+    const x = Math.random() * w;
+    const y = Math.random() * h * 0.6;
+    const color = ['#ffe600','#ff006e','#00d4ff','#39ff14','#ff6600','#ff69b4'][Math.floor(Math.random()*6)];
+    const count = 20;
+    for(let i=0;i<count;i++){
+      const angle = (i/count)*Math.PI*2;
+      const speed = 2+Math.random()*3;
+      particles.push({
+        x,y,
+        vx: Math.cos(angle)*speed,
+        vy: Math.sin(angle)*speed,
+        color,
+        life:1,
+        size: 4
+      });
+    }
+  }
+  
+  setInterval(addFirework, 600);
+  
+  function frame() {
+    c.clearRect(0,0,w,h);
+    particles.forEach((p,i) => {
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.08;
+      p.life -= 0.018;
+      if(p.life<=0) { particles.splice(i,1); return; }
+      c.globalAlpha = p.life;
+      c.fillStyle = p.color;
+      c.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+    });
+    c.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function spawnConfetti() {
+  const colors = ['#ffe600','#ff006e','#00d4ff','#39ff14','#ff6600','#ff69b4','#ffffff'];
+  const piece = document.createElement('div');
+  piece.className = 'confetti-piece';
+  piece.style.cssText = `
+    left:${Math.random()*100}%;
+    background:${colors[Math.floor(Math.random()*colors.length)]};
+    width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;
+    animation-duration:${1.5+Math.random()*2}s;
+    animation-delay:0s;
+  `;
+  document.body.appendChild(piece);
+  setTimeout(() => piece.remove(), 3500);
+}
+
+function spawnHeart() {
+  const heart = document.createElement('div');
+  heart.className = 'floating-heart';
+  heart.style.cssText = `
+    left:${10+Math.random()*80}%;
+    bottom:${80+Math.random()*100}px;
+    animation-duration:${2+Math.random()*2}s;
+    font-size:${12+Math.random()*14}px;
+  `;
+  heart.textContent = ['♡','♥','💕','💖','⭐'][Math.floor(Math.random()*5)];
+  document.body.appendChild(heart);
+  setTimeout(() => heart.remove(), 4000);
+}
+
+// ==============================
+// SCENE 5 — SECRET MESSAGE
+// ==============================
+function goToScene5() {
+  initAudio();
+  playVictoryFanfare();
+  transitionTo('scene4', 'scene5', setupScene5);
+}
+
+function setupScene5() {
+  // Stars in bg
+  const container = document.getElementById('starsContainer5');
+  for(let i=0;i<60;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `width:${Math.random()<0.3?4:2}px;height:${Math.random()<0.3?4:2}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${1.5+Math.random()*2}s;`;
+    container.appendChild(s);
+  }
+  
+  // Type lines one by one
+  const lines = ['l1','l2','l3','l4','l5','l6','l7','l8','l9','l10','l11','l12','l13','l14','l15'];
+  lines.forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('done');
+        playCoin();
+      }
+    }, 400 + i * 500);
+  });
+  
+  // Gentle hearts
+  setInterval(spawnHeart, 1200);
+  
+  // Gentle bg music
+  setTimeout(() => { if(ctx) bgMusicLoop(); }, 500);
+}
+
+function replayGame() {
+  location.reload();
+}
+
+// ==============================
+// CURSOR
+// ==============================
+document.addEventListener('mousemove', e => {
+  const cursor = document.getElementById('cursor');
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});
+
+// ==============================
+// INIT
+// ==============================
+window.addEventListener('load', () => {
+  setupScene1();
+});
+
+// Prevent context menu
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// Touch support
+document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+</script>
+</body>
+</html>
